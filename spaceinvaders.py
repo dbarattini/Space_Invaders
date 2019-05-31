@@ -6,7 +6,8 @@
 from pygame import *
 import sys
 from os.path import abspath, dirname
-from random import choice, randint
+from random import choice
+import time as t
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -186,6 +187,9 @@ class EnemiesGroup(sprite.Group):
             self.moveTime = 400
 
     def kill(self, enemy):
+        global enemy_killed
+        enemy_killed += 1
+
         self.enemies[enemy.row][enemy.column] = None
         is_column_dead = self.is_column_dead(enemy.column)
         if is_column_dead:
@@ -239,7 +243,7 @@ class Mystery(sprite.Sprite):
         passed = currentTime - self.timer
         if passed > self.moveTime:
             if (self.rect.x < 0 or self.rect.x > 800) and self.playSound:
-                self.mysteryEntered.play()
+                #self.mysteryEntered.play()
                 self.playSound = False
             if self.rect.x < 840 and self.direction == 1:
                 self.mysteryEntered.fadeout(4000)
@@ -337,7 +341,7 @@ class Text(object):
 
 
 class SpaceInvaders(object):
-    def __init__(self):
+    def __init__(self, gen, ind):
         # It seems, in Linux buffersize=512 is not enough, use 4096 to prevent:
         #   ALSA lib pcm.c:7963:(snd_pcm_recover) underrun occurred
         mixer.pre_init(44100, -16, 1, 4096)
@@ -363,10 +367,20 @@ class SpaceInvaders(object):
         self.scoreText = Text(FONT, 20, 'Score', WHITE, 5, 5)
         self.livesText = Text(FONT, 20, 'Lives ', WHITE, 640, 5)
 
+        global wins
+        self.genText = Text(FONT, 20, "Gen", WHITE, 200, 5)
+        self.genText2 = Text(FONT, 20, str(gen), GREEN, 250, 5)
+        self.indText = Text(FONT, 20, "Ind", WHITE, 400, 5)
+        self.indText2 = Text(FONT, 20, str(ind), GREEN, 450, 5)
+        self.winsText = Text(FONT, 20, "Wins", WHITE, 300, 5)
+        self.winsText2 = Text(FONT, 20, str(wins), GREEN, 360, 5)
+
+        # self.life1 = Life(715, 3)
+        # self.life2 = Life(742, 3)
+        # self.life3 = Life(769, 3)
+        # self.livesGroup = sprite.Group(self.life1, self.life2, self.life3)
         self.life1 = Life(715, 3)
-        self.life2 = Life(742, 3)
-        self.life3 = Life(769, 3)
-        self.livesGroup = sprite.Group(self.life1, self.life2, self.life3)
+        self.livesGroup = sprite.Group(self.life1)
 
     def reset(self, score):
         self.player = Ship()
@@ -444,7 +458,7 @@ class SpaceInvaders(object):
                                             15, 'laser', 'center')
                             self.bullets.add(bullet)
                             self.allSprites.add(self.bullets)
-                            self.sounds['shoot'].play()
+                            # self.sounds['shoot'].play()
                         else:
                             leftbullet = Bullet(self.player.rect.x + 8,
                                                 self.player.rect.y + 5, -1,
@@ -455,17 +469,20 @@ class SpaceInvaders(object):
                             self.bullets.add(leftbullet)
                             self.bullets.add(rightbullet)
                             self.allSprites.add(self.bullets)
-                            self.sounds['shoot2'].play()
+                            # self.sounds['shoot2'].play()
 
     def shoot(self):
         if len(self.bullets) == 0 and self.shipAlive:
+            global shot
+            shot += 1
+
             if self.score < 1000:
                 bullet = Bullet(self.player.rect.x + 23,
                                 self.player.rect.y + 5, -1,
                                 15, 'laser', 'center')
                 self.bullets.add(bullet)
                 self.allSprites.add(self.bullets)
-                self.sounds['shoot'].play()
+                # self.sounds['shoot'].play()
             else:
                 leftbullet = Bullet(self.player.rect.x + 8,
                                     self.player.rect.y + 5, -1,
@@ -476,21 +493,29 @@ class SpaceInvaders(object):
                 self.bullets.add(leftbullet)
                 self.bullets.add(rightbullet)
                 self.allSprites.add(self.bullets)
-                self.sounds['shoot2'].play()
+                # self.sounds['shoot2'].play()
 
-    def get_action(self):
+    def get_action(self, move):
+        global moves_limit
+        global n_moves
+
         self.keys = key.get_pressed()
         for e in event.get():
             if e.type == QUIT:
                 sys.exit()
         # ai core #
-        action = randint(0, 2)
-        if action == 0:
+        if move == "shoot":
             self.shoot()
-        if action == 1:
+        elif move == "move-left":
             self.player.move_left()
-        if action == 2:
+        elif move == "move-right":
             self.player.move_right()
+
+        n_moves += 1
+        if n_moves == moves_limit + 1:
+            self.gameOver = True
+            self.startGame = False
+            #self.score += 100
 
     def make_enemies(self):
         enemies = EnemiesGroup(10, 5)
@@ -544,7 +569,7 @@ class SpaceInvaders(object):
 
         for enemy in sprite.groupcollide(self.enemies, self.bullets,
                                          True, True).keys():
-            self.sounds['invaderkilled'].play()
+            # self.sounds['invaderkilled'].play()
             self.calculate_score(enemy.row)
             EnemyExplosion(enemy, self.explosionsGroup)
             self.gameTimer = time.get_ticks()
@@ -552,7 +577,7 @@ class SpaceInvaders(object):
         for mystery in sprite.groupcollide(self.mysteryGroup, self.bullets,
                                            True, True).keys():
             mystery.mysteryEntered.stop()
-            self.sounds['mysterykilled'].play()
+            # self.sounds['mysterykilled'].play()
             score = self.calculate_score(mystery.row)
             MysteryExplosion(mystery, score, self.explosionsGroup)
             newShip = Mystery()
@@ -561,16 +586,17 @@ class SpaceInvaders(object):
 
         for player in sprite.groupcollide(self.playerGroup, self.enemyBullets,
                                           True, True).keys():
-            if self.life3.alive():
-                self.life3.kill()
-            elif self.life2.alive():
-                self.life2.kill()
-            elif self.life1.alive():
-                self.life1.kill()
-            else:
-                self.gameOver = True
-                self.startGame = False
-            self.sounds['shipexplosion'].play()
+            # if self.life3.alive():
+            #     self.life3.kill()
+            # elif self.life2.alive():
+            #     self.life2.kill()
+            # elif self.life1.alive():
+            #     self.life1.kill()
+            # else:
+
+            self.gameOver = True
+            self.startGame = False
+            # self.sounds['shipexplosion'].play()
             ShipExplosion(player, self.explosionsGroup)
             self.makeNewShip = True
             self.shipTimer = time.get_ticks()
@@ -613,7 +639,8 @@ class SpaceInvaders(object):
             if self.should_exit(e):
                 sys.exit()
 
-    def main(self):
+    def main(self, moves):
+        t0 = t.time()
         while True:
             if self.mainScreen:
                 self.screen.blit(self.background, (0, 0))
@@ -624,42 +651,48 @@ class SpaceInvaders(object):
                 self.enemy3Text.draw(self.screen)
                 self.enemy4Text.draw(self.screen)
                 self.create_main_menu()
-                for e in event.get():
-                    if self.should_exit(e):
-                        sys.exit()
-                    if e.type == KEYUP:
-                        # Only create blockers on a new game, not a new round
-                        self.allBlockers = sprite.Group(self.make_blockers(0),
-                                                        self.make_blockers(1),
-                                                        self.make_blockers(2),
-                                                        self.make_blockers(3))
-                        self.livesGroup.add(self.life1, self.life2, self.life3)
-                        self.reset(0)
-                        self.startGame = True
-                        self.mainScreen = False
+
+                # Only create blockers on a new game, not a new round
+                self.allBlockers = sprite.Group(self.make_blockers(0),
+                                                self.make_blockers(1),
+                                                self.make_blockers(2),
+                                                self.make_blockers(3))
+                # self.livesGroup.add(self.life1, self.life2, self.life3)
+                self.reset(0)
+                self.startGame = True
+                self.mainScreen = False
 
             elif self.startGame:
                 if not self.enemies and not self.explosionsGroup:
+                    global wins
+                    global n_moves
+
+                    print("WINNER")
+                    wins += 1
+                    self.gameOver = True
+                    self.startGame = False
                     currentTime = time.get_ticks()
-                    if currentTime - self.gameTimer < 3000:
-                        self.screen.blit(self.background, (0, 0))
-                        self.scoreText2 = Text(FONT, 20, str(self.score),
-                                               GREEN, 85, 5)
-                        self.scoreText.draw(self.screen)
-                        self.scoreText2.draw(self.screen)
-                        self.nextRoundText.draw(self.screen)
-                        self.livesText.draw(self.screen)
-                        self.livesGroup.update()
-                        # self.check_input()
-                        self.get_action()
-                    if currentTime - self.gameTimer > 3000:
-                        # Move enemies closer to bottom
-                        self.enemyPosition += ENEMY_MOVE_DOWN
-                        self.reset(self.score)
-                        self.gameTimer += 3000
+
+                    # if currentTime - self.gameTimer < 3000:
+                    #     self.screen.blit(self.background, (0, 0))
+                    #     self.scoreText2 = Text(FONT, 20, str(self.score),
+                    #                            GREEN, 85, 5)
+                    #     self.scoreText.draw(self.screen)
+                    #     self.scoreText2.draw(self.screen)
+                    #     self.nextRoundText.draw(self.screen)
+                    #     self.livesText.draw(self.screen)
+                    #     self.livesGroup.update()
+                    #     # self.check_input()
+                    #     move = moves.pop(0)
+                    #     self.get_action(move)
+                    # if currentTime - self.gameTimer > 3000:
+                    #     # Move enemies closer to bottom
+                    #     self.enemyPosition += ENEMY_MOVE_DOWN
+                    #     self.reset(self.score)
+                    #     self.gameTimer += 3000
                 else:
                     currentTime = time.get_ticks()
-                    self.play_main_music(currentTime)
+                    #self.play_main_music(currentTime)
                     self.screen.blit(self.background, (0, 0))
                     self.allBlockers.update(self.screen)
                     self.scoreText2 = Text(FONT, 20, str(self.score), GREEN,
@@ -667,8 +700,16 @@ class SpaceInvaders(object):
                     self.scoreText.draw(self.screen)
                     self.scoreText2.draw(self.screen)
                     self.livesText.draw(self.screen)
+
+                    self.genText.draw(self.screen)
+                    self.genText2.draw(self.screen)
+                    self.indText.draw(self.screen)
+                    self.indText2.draw(self.screen)
+                    self.winsText.draw(self.screen)
+                    self.winsText2.draw(self.screen)
                     # self.check_input()
-                    self.get_action()
+                    move = moves.pop(0)
+                    self.get_action(move)
                     self.enemies.update(currentTime)
                     self.allSprites.update(self.keys, currentTime)
                     self.explosionsGroup.update(currentTime)
@@ -676,16 +717,45 @@ class SpaceInvaders(object):
                     self.create_new_ship(self.makeNewShip, currentTime)
                     self.make_enemies_shoot()
 
-            elif self.gameOver:
+            if self.gameOver:
+                t1 = t.time()
+                time_elapsed = t1 - t0  # seconds
                 currentTime = time.get_ticks()
                 # Reset enemy starting position
                 self.enemyPosition = ENEMY_DEFAULT_POSITION
                 self.create_game_over(currentTime)
+                return self.score,  time_elapsed, len(self.allBlockers)
 
             display.update()
             self.clock.tick(60)
 
 
-if __name__ == '__main__':
-    game = SpaceInvaders()
-    game.main()
+def play(_moves, n_moves_limit, gen, ind, win):
+    global shot
+    global enemy_killed
+    global n_moves
+    global moves_limit
+    global wins
+    global game
+
+    wins = win
+    moves_limit = n_moves_limit
+    n_moves = 1
+    enemy_killed = 0
+    shot = 0
+    game = SpaceInvaders(gen, ind)
+    moves = _moves.copy()
+    score, time_elapsed, defensive_blocks_alive = game.main(moves)
+
+    blank_fired = shot - enemy_killed
+    # hit_per_second = enemy_killed / time_elapsed
+    # point_per_second = score / time_elapsed
+    # hit_per_move = enemy_killed / moves_limit
+    # point_per_move = score / moves_limit
+
+    fitness = round((defensive_blocks_alive / 100) + (score / 10) + enemy_killed - (blank_fired/100), 2)
+    print("dba:", format(defensive_blocks_alive / 100, ".2f"), "score:", format(score/10, ".2f"), "kills:",
+          enemy_killed, "blanks",  format(blank_fired/100, ".2f"), "(NO) moves:", n_moves - 1, "partial_fitness:", fitness)
+    # return int((hit_per_move * 1000) + (point_per_move * 10) + (defensive_blocks_alive/100) + (score/10) + enemy_killed
+    #           - (blank_fired/100)), wins
+    return fitness, wins
