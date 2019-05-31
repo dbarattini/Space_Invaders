@@ -85,7 +85,7 @@ def two_points_cf(parents, probability):
 
 results = ga(gene_prototype=gene_prototype, n_genes=5000, pop_size=pop_size, mutation_function=lambda x: random.choice(x.alleles),
              n_generations=30, fitness_function=fitness_function, elitism=10, crossover_function=two_points_cf,
-             selection_function=tournament_selection(), pc=0.7, pm=0.01)
+             selection_function=tournament_selection, pc=0.7, pm=0.01)
 
 print(results)
 

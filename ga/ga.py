@@ -191,8 +191,8 @@ def ga(gene_prototype: Gene, n_genes: int, pop_size: int, mutation_function: Cal
                  "[ pop_size - int((pop_size * elitism)/100) must be even ]")
     gen = 0
     results = OrderedDict()
-    #pop = generate_pop_zero_with_weights(gene_prototype, n_genes, pop_size, WEIGHTS)
-    pop = generate_pop_zero(gene_prototype, n_genes, pop_size)
+    pop = generate_pop_zero_with_weights(gene_prototype, n_genes, pop_size, WEIGHTS)
+    #pop = generate_pop_zero(gene_prototype, n_genes, pop_size)
     best_chromosome, fitnesses = calculate_pop_fitness(pop, fitness_function)
     avg_fitness = round(mean(fitnesses), 2)
     best_chromosome_copy = Chromosome(best_chromosome.genes)
