@@ -9,32 +9,29 @@ from spaceinvaders import play
 gene_prototype = Gene(["move-right", "move-left", "shoot"])
 n_genes_considered = 5000
 pop_size = 20
-individual_counter = 0
+individual_index = 0
 gen = 0
 wins = 0
-first_ind_gen = True
 
 
 def fitness_function(moves):
-    global individual_counter
+    global individual_index
     global gen
     global wins
-    global first_ind_gen
 
-    individual_counter += 1
+    individual_index += 1
 
-    fitness1, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
-    fitness2, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
-    fitness3, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
-    #fitness4, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
-    #fitness5, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
+    fitness1, wins = play(moves, n_genes_considered, gen, individual_index, wins)
+    fitness2, wins = play(moves, n_genes_considered, gen, individual_index, wins)
+    fitness3, wins = play(moves, n_genes_considered, gen, individual_index, wins)
+    # fitness4, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
+    # fitness5, wins = play(moves, n_genes_considered, gen, individual_counter, wins)
 
     fitness = round((fitness1 + fitness2 + fitness3) / 3, 2)
     print("fitness:", fitness)
-    if individual_counter == pop_size:
+    if individual_index == pop_size:
         gen += 1
-        individual_counter = 0
-        # first_ind_gen = True
+        individual_index = 0
     if fitness >= 0:
         return fitness
     else:
@@ -43,11 +40,6 @@ def fitness_function(moves):
 
 def one_point_cf(parents, probability):
     global n_genes_considered
-    global first_ind_gen
-
-    # if first_ind_gen == True:
-    #    n_genes_considered += 250
-    #    first_ind_gen = False
 
     if n_genes_considered > (len(parents[1].genes) - 1):
         limit = len(parents[1].genes) - 1

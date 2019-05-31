@@ -243,7 +243,7 @@ class Mystery(sprite.Sprite):
         passed = currentTime - self.timer
         if passed > self.moveTime:
             if (self.rect.x < 0 or self.rect.x > 800) and self.playSound:
-                #self.mysteryEntered.play()
+                # self.mysteryEntered.play()
                 self.playSound = False
             if self.rect.x < 840 and self.direction == 1:
                 self.mysteryEntered.fadeout(4000)
@@ -503,7 +503,6 @@ class SpaceInvaders(object):
         for e in event.get():
             if e.type == QUIT:
                 sys.exit()
-        # ai core #
         if move == "shoot":
             self.shoot()
         elif move == "move-left":
@@ -515,7 +514,6 @@ class SpaceInvaders(object):
         if n_moves == moves_limit + 1:
             self.gameOver = True
             self.startGame = False
-            #self.score += 100
 
     def make_enemies(self):
         enemies = EnemiesGroup(10, 5)
@@ -748,14 +746,8 @@ def play(_moves, n_moves_limit, gen, ind, win):
     score, time_elapsed, defensive_blocks_alive = game.main(moves)
 
     blank_fired = shot - enemy_killed
-    # hit_per_second = enemy_killed / time_elapsed
-    # point_per_second = score / time_elapsed
-    # hit_per_move = enemy_killed / moves_limit
-    # point_per_move = score / moves_limit
 
     fitness = round((defensive_blocks_alive / 100) + (score / 10) + enemy_killed - (blank_fired/100), 2)
     print("dba:", format(defensive_blocks_alive / 100, ".2f"), "score:", format(score/10, ".2f"), "kills:",
           enemy_killed, "blanks",  format(blank_fired/100, ".2f"), "(NO) moves:", n_moves - 1, "partial_fitness:", fitness)
-    # return int((hit_per_move * 1000) + (point_per_move * 10) + (defensive_blocks_alive/100) + (score/10) + enemy_killed
-    #           - (blank_fired/100)), wins
     return fitness, wins
