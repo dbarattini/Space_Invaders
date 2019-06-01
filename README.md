@@ -19,10 +19,16 @@ Genetic Algorithms applied to Space Invaders.
 
 - python        3.7.3
 - pygame        1.9.6
-- numpy         1.16.2
+- numpy         1.16.3
 - matplotlib    3.0.3 
 
-If you have all the requirements installed, you can run the program in the command prompt / terminal.
+install requirements:
+```bash
+cd Space_Invaders
+pip install -r requirements.txt
+```
+
+if you have all the requirements installed, you can run the program in the command prompt / terminal.
 
 ```bash
 cd Space_Invaders
