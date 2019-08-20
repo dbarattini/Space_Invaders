@@ -6,7 +6,7 @@
 from pygame import *
 import sys
 from os.path import abspath, dirname
-from random import choice
+import random
 import time as t
 
 BASE_PATH = abspath(dirname(__file__))
@@ -46,10 +46,10 @@ class Ship(sprite.Sprite):
         self.speed = 5
 
     def update(self, keys, *args):
-        if keys[K_LEFT] and self.rect.x > 10:
-            self.rect.x -= self.speed
-        if keys[K_RIGHT] and self.rect.x < 740:
-            self.rect.x += self.speed
+        # if keys[K_LEFT] and self.rect.x > 10:
+        #    self.rect.x -= self.speed
+        # if keys[K_RIGHT] and self.rect.x < 740:
+        #    self.rect.x += self.speed
         game.screen.blit(self.image, self.rect)
 
     def move_left(self):
@@ -175,7 +175,7 @@ class EnemiesGroup(sprite.Group):
                        for row in range(self.rows))
 
     def random_bottom(self):
-        col = choice(self._aliveColumns)
+        col = random.choice(self._aliveColumns)
         col_enemies = (self.enemies[row - 1][col]
                        for row in range(self.rows, 0, -1))
         return next((en for en in col_enemies if en is not None), None)
@@ -393,7 +393,7 @@ class SpaceInvaders(object):
         self.make_enemies()
         self.allSprites = sprite.Group(self.player, self.enemies,
                                        self.livesGroup, self.mysteryShip)
-        self.keys = key.get_pressed()
+        self.keys = None
 
         self.timer = time.get_ticks()
         self.noteTimer = time.get_ticks()
@@ -499,7 +499,7 @@ class SpaceInvaders(object):
         global moves_limit
         global n_moves
 
-        self.keys = key.get_pressed()
+        # self.keys = key.get_pressed()
         for e in event.get():
             if e.type == QUIT:
                 sys.exit()
@@ -541,7 +541,7 @@ class SpaceInvaders(object):
                   2: 20,
                   3: 10,
                   4: 10,
-                  5: choice([50, 100, 150, 300])
+                  5: random.choice([50, 100, 150, 300])
                   }
 
         score = scores[row]
@@ -639,16 +639,19 @@ class SpaceInvaders(object):
 
     def main(self, moves):
         t0 = t.time()
+
+        random.seed(1)  # comment this line to make the game random
+
         while True:
             if self.mainScreen:
-                self.screen.blit(self.background, (0, 0))
-                self.titleText.draw(self.screen)
-                self.titleText2.draw(self.screen)
-                self.enemy1Text.draw(self.screen)
-                self.enemy2Text.draw(self.screen)
-                self.enemy3Text.draw(self.screen)
-                self.enemy4Text.draw(self.screen)
-                self.create_main_menu()
+                #self.screen.blit(self.background, (0, 0))
+                #self.titleText.draw(self.screen)
+                #self.titleText2.draw(self.screen)
+                #self.enemy1Text.draw(self.screen)
+                #self.enemy2Text.draw(self.screen)
+                #self.enemy3Text.draw(self.screen)
+                #self.enemy4Text.draw(self.screen)
+                #self.create_main_menu()
 
                 # Only create blockers on a new game, not a new round
                 self.allBlockers = sprite.Group(self.make_blockers(0),
@@ -662,11 +665,6 @@ class SpaceInvaders(object):
 
             elif self.startGame:
                 if not self.enemies and not self.explosionsGroup:
-                    global wins
-                    global n_moves
-
-                    print("WINNER")
-                    wins += 1
                     self.gameOver = True
                     self.startGame = False
                     currentTime = time.get_ticks()
@@ -716,6 +714,12 @@ class SpaceInvaders(object):
                     self.make_enemies_shoot()
 
             if self.gameOver:
+                if not self.enemies and not self.explosionsGroup:
+                    global wins
+                    global n_moves
+
+                    print("WINNER")
+                    wins += 1
                 t1 = t.time()
                 time_elapsed = t1 - t0  # seconds
                 currentTime = time.get_ticks()

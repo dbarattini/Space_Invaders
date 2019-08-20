@@ -75,15 +75,15 @@ def two_points_cf(parents, probability):
     return [first_child, second_child]
 
 
-# tournament selection
-results = ga(gene_prototype=gene_prototype, n_genes=5000, pop_size=pop_size, mutation_function=lambda x: random.choice(x.alleles),
-             n_generations=30, fitness_function=fitness_function, elitism=20, crossover_function=two_points_cf,
-             selection_function=tournament_selection, pc=0.7, pm=0.001)
+# TORUNAMENT SELECTION
+# results = ga(gene_prototype=gene_prototype, n_genes=5000, pop_size=pop_size, mutation_function=lambda x: random.choice(x.alleles),
+#             n_generations=30, fitness_function=fitness_function, elitism=10, crossover_function=two_points_cf,
+#             selection_function=tournament_selection, pc=0.7, pm=0.001)
 
-# roulette wheel selection
-#results = ga(gene_prototype=gene_prototype, n_genes=5000, pop_size=pop_size, mutation_function=lambda x: random.choice(x.alleles),
-#             n_generations=30, fitness_function=fitness_function, elitism=20, crossover_function=one_point_cf,
-#             selection_function=roulette_wheel_selection, pc=0.7, pm=0.001)
+# ROULETTE WHEEL SELECTION
+results = ga(gene_prototype=gene_prototype, n_genes=5000, pop_size=pop_size, mutation_function=lambda x: random.choice(x.alleles),
+             n_generations=30, fitness_function=fitness_function, elitism=20, crossover_function=one_point_cf,
+             selection_function=roulette_wheel_selection, pc=0.7, pm=0.001)
 
 
 print(results)
