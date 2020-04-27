@@ -640,7 +640,7 @@ class SpaceInvaders(object):
     def main(self, moves):
         t0 = t.time()
 
-        random.seed(1)  # comment this line to make the game random
+        #random.seed(1)  # comment this line to make the game random
 
         while True:
             if self.mainScreen:
