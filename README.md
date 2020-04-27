@@ -13,6 +13,8 @@ Genetic Algorithms applied to Space Invaders.
 
 <img src="http://i.imgur.com/mR81p5O.png" width="300" height="240"/>
 
+[Demo Video](https://www.youtube.com/watch?v=LObfJvK7kqM&t=)
+
 ## How To Start the Genetic Algorithm
 
 ### Requirements
